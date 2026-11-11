@@ -1,0 +1,8 @@
+# DNS Lookup
+
+> Free, single-page tool to look up DNS records of any common type for a domain or IP address.
+
+Static site (no backend, no build step, no dependencies) at https://dns.hbenali.ovh. Queries Google Public DNS over HTTPS for A, AAAA, CNAME, MX, NS, TXT, SOA, SRV, CAA, HTTPS, SVCB, DS, DNSKEY, PTR and TLSA records, shows TTL, parsed data, response status (NOERROR, NXDOMAIN, SERVFAIL...), the DNSSEC AD flag and any CNAME chain. An IP address is converted to its reverse (PTR) name. Parameters: `?domain=example.com&type=MX` (type `ALL` queries the common types).
+
+## Pages
+- [DNS Lookup](https://dns.hbenali.ovh/): the tool itself.

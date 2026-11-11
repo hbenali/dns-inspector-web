@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DNS Lookup — DNS Record Checker</title>
+  <meta name="description" content="Free DNS lookup. Query A, AAAA, CNAME, MX, NS, TXT, SOA, SRV, CAA, HTTPS, SVCB, DS, DNSKEY, PTR and TLSA records over DNS-over-HTTPS, with TTLs, response status, DNSSEC AD flag and CNAME chain.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://dns.hbenali.ovh/">
+
+  <!-- Security (static hosting: no custom HTTP headers, so CSP/referrer are set here; X-Frame-Options/X-Content-Type-Options need a real header and aren't achievable via meta) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://dns.google; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="DNS Lookup — DNS Record Checker">
+  <meta property="og:description" content="Look up any DNS record type for a domain or IP: TTL, parsed data, response status, DNSSEC flag and CNAME chain.">
+  <meta property="og:url" content="https://dns.hbenali.ovh/">
+  <meta property="og:site_name" content="DNS Lookup">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://dns.hbenali.ovh/favicon.svg">
+  <meta property="og:image:type" content="image/svg+xml">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="DNS Lookup — DNS Record Checker">
+  <meta name="twitter:description" content="Look up any DNS record type for a domain or IP: TTL, parsed data, response status, DNSSEC flag and CNAME chain.">
+  <meta name="twitter:image" content="https://dns.hbenali.ovh/favicon.svg">
+
+  <!-- SVG Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0c1218" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f4efe4" media="(prefers-color-scheme: light)">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DNS Lookup">
+
+  <!-- dns.google is only hit on-demand after a lookup -->
+  <link rel="dns-prefetch" href="https://dns.google">
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "url": "https://dns.hbenali.ovh/",
+        "name": "DNS Lookup",
+        "description": "Free DNS record lookup over DNS-over-HTTPS.",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://dns.hbenali.ovh/?domain={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "WebApplication",
+        "name": "DNS Lookup",
+        "url": "https://dns.hbenali.ovh/",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Any",
+        "description": "Look up DNS records of any type for a domain or IP address, with DNSSEC status and CNAME chain.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    ]
+  }
+  </script>
+
+
+  <link rel="preload" href="/fonts/big-shoulders-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/newsreader-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/site.css">
+</head>
+
+<body>
+<a class="skip" href="#domainInput">Skip to the tool</a>
+<header class="hero">
+  <div class="wrap">
+    <h1 class="display">
+      <span class="line"><span>DNS</span></span>
+      <span class="line"><span>look up any record</span></span>
+    </h1>
+    <p class="lead">Ask for any <strong>record type</strong> of a name or IP and read the answer in plain terms: TTL, status, DNSSEC and CNAME chain.</p>
+  </div>
+</header>
+
+<main>
+  <section class="block wrap" aria-labelledby="lookupTitle">
+    <h2 class="block-title" id="lookupTitle">Look up DNS records</h2>
+
+    <form id="lookupForm" class="input-group" novalidate>
+      <div class="field">
+        <label for="domainInput">
+          <span>Domain name or IP address</span>
+          <i>an IP becomes its reverse (PTR) name</i>
+        </label>
+        <div class="field-row domain-input-wrapper">
+          <input type="text" id="domainInput" placeholder="e.g. example.com or 8.8.8.8" value="example.com" spellcheck="false" autocomplete="off" autocapitalize="off">
+        </div>
+      </div>
+      <div class="field">
+        <label for="typeSelect">Record type</label>
+        <div class="field-row">
+          <select id="typeSelect"></select>
+        </div>
+      </div>
+      <div class="actions form-actions">
+        <button type="submit" class="btn" id="lookupBtn">
+          <span id="btnText">Look up</span>
+          <span id="btnLoader" hidden></span>
+        </button>
+        <button type="button" class="btn quiet" id="allBtn">All common types</button>
+      </div>
+    </form>
+    <p class="block-note">"All common types" queries A, AAAA, CNAME, MX, NS, TXT, SOA and CAA in parallel. For SRV or TLSA, enter the full name, for example <code>_sip._tcp.example.com</code> or <code>_25._tcp.mail.example.com</code>.</p>
+
+    <div class="result-area" id="resultContainer" aria-live="polite">
+      <div class="state empty empty-state" id="placeholderState">
+        <p>Enter a name or an IP, pick a record type and click "Look up".<br>Nothing is queried until you do.</p>
+      </div>
+      <div id="recordsContainer" hidden></div>
+      <div id="errorContainer" hidden></div>
+    </div>
+  </section>
+
+  <section class="block wrap" aria-labelledby="refTitle">
+    <h2 class="block-title" id="refTitle">What each record is for</h2>
+    <dl class="ref">
+      <div><dt>A</dt><dd>The IPv4 address of a host.</dd></div>
+      <div><dt>AAAA</dt><dd>The IPv6 address of a host.</dd></div>
+      <div><dt>CNAME</dt><dd>An alias: this name is another name. Cannot coexist with other records at the same name.</dd></div>
+      <div><dt>MX</dt><dd>Mail servers that accept email for the domain, with a priority (lowest is tried first).</dd></div>
+      <div><dt>NS</dt><dd>The authoritative name servers of the zone.</dd></div>
+      <div><dt>TXT</dt><dd>Free-form text: SPF, DKIM keys, DMARC policy, domain verification tokens.</dd></div>
+      <div><dt>SOA</dt><dd>Start of authority: primary server, admin mailbox, serial number and refresh, retry, expire and negative-cache timers.</dd></div>
+      <div><dt>SRV</dt><dd>Where a service runs: priority, weight, port and target host (name form <code>_service._proto.name</code>).</dd></div>
+      <div><dt>CAA</dt><dd>Which certificate authorities may issue certificates for the domain.</dd></div>
+      <div><dt>HTTPS</dt><dd>Service binding for web origins: ALPN protocols, address hints, alias to another name.</dd></div>
+      <div><dt>SVCB</dt><dd>General service binding, the base of HTTPS records, for other services.</dd></div>
+      <div><dt>DS</dt><dd>Delegation signer: a hash of the child zone's key, published in the parent to chain DNSSEC trust.</dd></div>
+      <div><dt>DNSKEY</dt><dd>The public keys a signed zone uses (KSK and ZSK) to verify its DNSSEC signatures.</dd></div>
+      <div><dt>PTR</dt><dd>Reverse DNS: the hostname for an IP address, stored under <code>in-addr.arpa</code> or <code>ip6.arpa</code>.</dd></div>
+      <div><dt>TLSA</dt><dd>DANE: pins the TLS certificate or key of a service (name form <code>_port._tcp.host</code>).</dd></div>
+    </dl>
+    <p class="block-note">Status codes: NOERROR (worked), NXDOMAIN (name does not exist), SERVFAIL (resolver could not get an answer, often a broken delegation or DNSSEC failure), REFUSED (server declined). AD means Google Public DNS validated the answer with DNSSEC.</p>
+  </section>
+</main>
+
+<div class="foot">
+  <footer>
+    <span>using <strong>Google DNS over HTTPS</strong></span>
+    <span>look up DNS records of any type</span>
+    <a href="https://hbenali.ovh" target="_blank" rel="noopener noreferrer">hbenali.ovh</a>
+  </footer>
+</div>
+
+<script src="/app.js" defer></script>
+</body>
+</html>

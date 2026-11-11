@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dns.hbenali.ovh/sitemap.xml
