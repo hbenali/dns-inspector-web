@@ -158,13 +158,14 @@
 
   // CNAME chain: follow CNAME records in the answer starting from the queried name.
   function cnameChain(name, results) {
-    var map = Object.create(null); // names come from DNS answers: no prototype keys like __proto__
+    // Map and Set, not plain objects: the keys are names taken from DNS answers.
+    var map = new Map();
     results.forEach(function (r) {
-      r.answers.forEach(function (a) { if (a.type === 5) map[a.name.toLowerCase().replace(/\.$/, '')] = a.data.replace(/\.$/, ''); });
+      r.answers.forEach(function (a) { if (a.type === 5) map.set(a.name.toLowerCase().replace(/\.$/, ''), a.data.replace(/\.$/, '')); });
     });
-    var chain = [name], seen = Object.create(null);
+    var chain = [name], seen = new Set();
     var cur = name;
-    while (map[cur] && !seen[cur]) { seen[cur] = true; cur = map[cur].toLowerCase(); chain.push(cur); }
+    while (map.has(cur) && !seen.has(cur)) { seen.add(cur); cur = map.get(cur).toLowerCase(); chain.push(cur); }
     return chain.length > 1 ? chain : null;
   }
 
